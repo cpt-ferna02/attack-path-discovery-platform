@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attack Path Discovery Platform</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+    <div id="app">
+        <!-- HEADER -->
+        <header>
+            <div class="header-left">
+                <div class="logo">⬡ APDP</div>
+                <div class="header-title">
+                    <h1>Attack Path Discovery Platform</h1>
+                    <span class="subtitle">Identity Attack Surface Analysis</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="status-dot"></div>
+                <span id="domain-name">Loading...</span>
+            </div>
+        </header>
+
+        <!-- STAT CARDS -->
+        <div class="stats-bar">
+            <div class="stat-card critical">
+                <div class="stat-value" id="stat-paths">--</div>
+                <div class="stat-label">Attack Paths</div>
+            </div>
+            <div class="stat-card high">
+                <div class="stat-value" id="stat-detections">--</div>
+                <div class="stat-label">Detections</div>
+            </div>
+            <div class="stat-card medium">
+                <div class="stat-value" id="stat-nodes">--</div>
+                <div class="stat-label">Graph Nodes</div>
+            </div>
+            <div class="stat-card low">
+                <div class="stat-value" id="stat-edges">--</div>
+                <div class="stat-label">Relationships</div>
+            </div>
+            <div class="stat-card info">
+                <div class="stat-value" id="stat-users">--</div>
+                <div class="stat-label">Users</div>
+            </div>
+            <div class="stat-card info">
+                <div class="stat-value" id="stat-groups">--</div>
+                <div class="stat-label">Groups</div>
+            </div>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-grid">
+
+            <!-- LEFT: Graph Visualization -->
+            <div class="panel" id="graph-panel">
+                <div class="panel-header">
+                    <span class="panel-title">⬡ Identity Relationship Graph</span>
+                    <span class="panel-badge">LIVE</span>
+                </div>
+                <div id="graph-container">
+                    <svg id="graph-svg"></svg>
+                </div>
+                <div class="graph-legend">
+                    <span class="legend-item user">● User</span>
+                    <span class="legend-item group">● Group</span>
+                    <span class="legend-item computer">● Computer</span>
+                    <span class="legend-item svc">● Service Account</span>
+                </div>
+            </div>
+
+            <!-- RIGHT: Attack Paths + Detections -->
+            <div class="right-panels">
+
+                <!-- Attack Paths -->
+                <div class="panel" id="paths-panel">
+                    <div class="panel-header">
+                        <span class="panel-title">⚠ Attack Paths</span>
+                        <span class="panel-badge critical" id="paths-badge">--</span>
+                    </div>
+                    <div id="paths-list"></div>
+                </div>
+
+                <!-- Detections -->
+                <div class="panel" id="detections-panel">
+                    <div class="panel-header">
+                        <span class="panel-title">⬡ Security Detections</span>
+                        <span class="panel-badge" id="detections-badge">--</span>
+                    </div>
+                    <div id="detections-list"></div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
