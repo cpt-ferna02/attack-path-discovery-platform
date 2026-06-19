@@ -23,7 +23,6 @@
 
 > ⬡ Full platform — graph engine, attack path discovery, risk scoring, and security detections running live.
 
-<!-- Screenshot #10: Full dashboard screenshot here -->
 ![Dashboard](docs/screenshots/dashboard_full.png)
 
 ---
@@ -53,6 +52,8 @@ Risk Score: 100/100 — CRITICAL
 ```
 
 A low-privilege intern account reaches Domain Admin in **4 hops**. Traditional audits miss this entirely.
+
+Designed to model real-world Active Directory privilege relationships and identify high-risk attack paths through graph-based analysis.
 
 ---
 
@@ -115,29 +116,26 @@ AD Environment (LDAP / Fake Generator)
 
 ## Screenshots
 
-### Project Structure & Graph Engine
-<!-- Screenshot #3: VS Code split view with graph output -->
+### Data Collection
+![Data Collection](docs/screenshots/data_collection.png)
+
+### Graph Engine
 ![Graph Engine](docs/screenshots/graph_engine.png)
 
 ### Attack Path Discovery
-<!-- Screenshot #4: Attack path panels showing j.intern → Domain Admins -->
 ![Attack Paths](docs/screenshots/attack_paths.png)
 
 ### Risk Scoring Engine
-<!-- Screenshot #5: Risk scoring table with 100/100 CRITICAL score -->
 ![Risk Scoring](docs/screenshots/risk_scoring.png)
 
 ### Security Detections (MITRE ATT&CK)
-<!-- Screenshot #7: Detections table with CRITICAL/HIGH/MEDIUM findings -->
 ![Detections](docs/screenshots/detections.png)
 
 ### REST API
-<!-- Screenshot #8: Flask API + curl output split view -->
 ![API](docs/screenshots/api.png)
 
 ### Live Dashboard
-<!-- Screenshot #9: Full browser dashboard -->
-![Dashboard](docs/screenshots/dashboard_panels.png)
+![Dashboard Panels](docs/screenshots/dashboard_panels.png)
 
 ---
 
@@ -152,8 +150,8 @@ AD Environment (LDAP / Fake Generator)
 
 ```bash
 # Clone the repository
-git clone https://github.com/cpt-ferna02/attack-path-platform.git
-cd attack-path-platform
+git clone https://github.com/cpt-ferna02/attack-path-discovery-platform.git
+cd attack-path-discovery-platform
 
 # Create virtual environment
 python3 -m venv venv
@@ -252,7 +250,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 **Problem:** The D3.js force simulation threw `Error: node not found: undefined` when trying to render the relationship graph. The API was returning valid data (confirmed via `curl` and browser console), but D3 couldn't resolve edge references to nodes.
 
 **Root cause investigation:**
-1. First confirmed the API was working: `fetch('/api/graph').then(r => r.json()).then(console.log)` — data was valid
+1. Confirmed the API was working: `fetch('/api/graph').then(r => r.json()).then(console.log)` — data was valid
 2. Confirmed `renderGraph()` was being called but silently failing
 3. Ran `document.getElementById('graph-svg').innerHTML` — returned empty string, confirming D3 wasn't writing anything
 4. Identified that spreading `...e` on edge objects kept both `from/to` AND `source/target` fields, causing D3's internal node lookup to fail
@@ -341,8 +339,6 @@ python3 api/app.py
 
 ## Why This Project
 
-> *"If I were reviewing entry-level candidates and saw Splunk Lab, Wazuh Lab, Pentest Lab, and Attack Path Discovery Platform — I would spend the most time on the Attack Path Discovery Platform. It's the least common and the most likely to indicate strong engineering ability."*
-
 Most cybersecurity student projects demonstrate tool usage. This project demonstrates **security product engineering** — the ability to design, build, and debug a complete system from data modeling through to a production-quality interface.
 
 ---
@@ -363,7 +359,3 @@ Most cybersecurity student projects demonstrate tool usage. This project demonst
 **cpt-ferna02** — Security Engineer in training
 
 Built on: Arch Linux (BlackArch) VM · Developed via Remote SSH from VS Code on Windows 11
-
----
-
-*Built without AI-generated attack paths. Every relationship, scoring weight, and detection rule is hand-engineered based on real AD attack techniques.*
