@@ -1,6 +1,5 @@
 const API = 'http://192.168.1.80:5000/api';
 
-// Color map for node types
 const NODE_COLORS = {
     user: '#00d4ff',
     group: '#00ff88',
@@ -9,10 +8,10 @@ const NODE_COLORS = {
 };
 
 const NODE_SIZES = {
-    user: 10,
-    group: 14,
-    computer: 12,
-    service_account: 13
+    user: 12,
+    group: 16,
+    computer: 14,
+    service_account: 15
 };
 
 async function fetchAll() {
@@ -25,116 +24,13 @@ async function fetchAll() {
         ]);
 
         updateStats(env, graph, paths, detections);
-        function renderGraph(graphData) {
-    const container = document.getElementById('graph-container');
-    const width = 550;
-    const height = 700;
-
-    const svg = d3.select('#graph-svg')
-        .attr('width', width)
-        .attr('height', height);
-
-    svg.selectAll('*').remove();
-
-    svg.append('defs').append('marker')
-        .attr('id', 'arrow')
-        .attr('viewBox', '0 -5 10 10')
-        .attr('refX', 22)
-        .attr('refY', 0)
-        .attr('markerWidth', 6)
-        .attr('markerHeight', 6)
-        .attr('orient', 'auto')
-        .append('path')
-        .attr('d', 'M0,-5L10,0L0,5')
-        .attr('fill', '#1e2d45');
-
-    const g = svg.append('g');
-
-    svg.call(d3.zoom().scaleExtent([0.3, 3]).on('zoom', e => {
-        g.attr('transform', e.transform);
-    }));
-
-    // Create index map for nodes
-    const nodeMap = {};
-    const nodes = graphData.nodes.map(n => {
-        const node = { ...n };
-        nodeMap[n.id] = node;
-        return node;
-    });
-
-    // Only include edges where both nodes exist
-    const edges = graphData.edges
-        .filter(e => nodeMap[e.from] && nodeMap[e.to])
-        .map(e => ({
-            relationship: e.relationship,
-            source: e.from,
-            target: e.to
-        }));
-
-    const simulation = d3.forceSimulation(nodes)
-        .force('link', d3.forceLink(edges)
-            .id(d => d.id)
-            .distance(100))
-        .force('charge', d3.forceManyBody().strength(-300))
-        .force('center', d3.forceCenter(width / 2, height / 2))
-        .force('collision', d3.forceCollide(30));
-
-    const link = g.append('g').selectAll('line')
-        .data(edges)
-        .join('line')
-        .attr('stroke', '#1e2d45')
-        .attr('stroke-width', 1.5)
-        .attr('marker-end', 'url(#arrow)');
-
-    const edgeLabel = g.append('g').selectAll('text')
-        .data(edges)
-        .join('text')
-        .attr('font-size', 7)
-        .attr('fill', '#374151')
-        .attr('text-anchor', 'middle')
-        .text(d => d.relationship);
-
-    const node = g.append('g').selectAll('g')
-        .data(nodes)
-        .join('g')
-        .call(d3.drag()
-            .on('start', (e, d) => { if (!e.active) simulation.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
-            .on('drag', (e, d) => { d.fx = e.x; d.fy = e.y; })
-            .on('end', (e, d) => { if (!e.active) simulation.alphaTarget(0); d.fx = null; d.fy = null; }));
-
-    node.append('circle')
-        .attr('r', d => NODE_SIZES[d.type] || 10)
-        .attr('fill', d => NODE_COLORS[d.type] || '#64748b')
-        .attr('fill-opacity', 0.15)
-        .attr('stroke', d => NODE_COLORS[d.type] || '#64748b')
-        .attr('stroke-width', 2);
-
-    node.append('text')
-        .attr('dy', d => (NODE_SIZES[d.type] || 10) + 12)
-        .attr('text-anchor', 'middle')
-        .attr('font-size', 9)
-        .attr('fill', '#64748b')
-        .text(d => d.id);
-
-    simulation.on('tick', () => {
-        link
-            .attr('x1', d => d.source.x)
-            .attr('y1', d => d.source.y)
-            .attr('x2', d => d.target.x)
-            .attr('y2', d => d.target.y);
-
-        edgeLabel
-            .attr('x', d => (d.source.x + d.target.x) / 2)
-            .attr('y', d => (d.source.y + d.target.y) / 2);
-
-        node.attr('transform', d => `translate(${d.x},${d.y})`);
-    });
-}
-
         renderPaths(paths);
         renderDetections(detections);
 
         document.getElementById('domain-name').textContent = env.domain;
+
+        // Delay graph render to ensure DOM is fully laid out
+        setTimeout(() => renderGraph(graph), 300);
 
     } catch (err) {
         console.error('API error:', err);
@@ -154,97 +50,155 @@ function updateStats(env, graph, paths, detections) {
 }
 
 function renderGraph(graphData) {
-    const width = 550;
-    const height = 700;
+    try {
+        const container = document.getElementById('graph-container');
+        const width = container.clientWidth || 800;
+        const height = container.clientHeight || 600;
 
-    const svg = d3.select('#graph-svg')
-        .attr('width', width)
-        .attr('height', height);
+        console.log('Rendering graph — container:', width, 'x', height);
+        console.log('Nodes:', graphData.nodes.length, 'Edges:', graphData.edges.length);
 
-    svg.selectAll('*').remove();
+        const svg = d3.select('#graph-svg')
+            .attr('width', width)
+            .attr('height', height)
+            .attr('viewBox', `0 0 ${width} ${height}`);
 
-    const g = svg.append('g');
+        svg.selectAll('*').remove();
 
-    svg.call(d3.zoom().scaleExtent([0.3, 3]).on('zoom', e => {
-        g.attr('transform', e.transform);
-    }));
+        // Arrow marker
+        svg.append('defs').append('marker')
+            .attr('id', 'arrow')
+            .attr('viewBox', '0 -5 10 10')
+            .attr('refX', 25)
+            .attr('refY', 0)
+            .attr('markerWidth', 6)
+            .attr('markerHeight', 6)
+            .attr('orient', 'auto')
+            .append('path')
+            .attr('d', 'M0,-5L10,0L0,5')
+            .attr('fill', '#2e4060');
 
-    // Build nodes array
-    const nodes = graphData.nodes.map(n => ({ ...n }));
+        const g = svg.append('g');
 
-    // Build index lookup
-    const idToIndex = {};
-    nodes.forEach((n, i) => { idToIndex[n.id] = i; });
+        svg.call(d3.zoom()
+            .scaleExtent([0.2, 4])
+            .on('zoom', e => g.attr('transform', e.transform))
+        );
 
-    // Build edges using numeric indices
-    const edges = [];
-    graphData.edges.forEach(e => {
-        const si = idToIndex[e.from];
-        const ti = idToIndex[e.to];
-        if (si !== undefined && ti !== undefined) {
-            edges.push({
-                source: si,
-                target: ti,
-                relationship: e.relationship
-            });
-        }
-    });
+        // Build nodes
+        const nodes = graphData.nodes.map(n => ({ ...n }));
 
-    const simulation = d3.forceSimulation(nodes)
-        .force('link', d3.forceLink(edges).distance(100))
-        .force('charge', d3.forceManyBody().strength(-300))
-        .force('center', d3.forceCenter(width / 2, height / 2))
-        .force('collision', d3.forceCollide(30));
+        // Build index map
+        const idToIndex = {};
+        nodes.forEach((n, i) => { idToIndex[n.id] = i; });
 
-    const link = g.append('g').selectAll('line')
-        .data(edges)
-        .join('line')
-        .attr('stroke', '#1e2d45')
-        .attr('stroke-width', 1.5);
+        // Build edges using numeric indices
+        const edges = [];
+        graphData.edges.forEach(e => {
+            const si = idToIndex[e.from];
+            const ti = idToIndex[e.to];
+            if (si !== undefined && ti !== undefined) {
+                edges.push({
+                    source: si,
+                    target: ti,
+                    relationship: e.relationship
+                });
+            }
+        });
 
-    const edgeLabel = g.append('g').selectAll('text')
-        .data(edges)
-        .join('text')
-        .attr('font-size', 7)
-        .attr('fill', '#374151')
-        .attr('text-anchor', 'middle')
-        .text(d => d.relationship);
+        console.log('Valid edges built:', edges.length);
 
-    const node = g.append('g').selectAll('g')
-        .data(nodes)
-        .join('g')
-        .call(d3.drag()
-            .on('start', (e, d) => { if (!e.active) simulation.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
-            .on('drag', (e, d) => { d.fx = e.x; d.fy = e.y; })
-            .on('end', (e, d) => { if (!e.active) simulation.alphaTarget(0); d.fx = null; d.fy = null; }));
+        const simulation = d3.forceSimulation(nodes)
+            .force('link', d3.forceLink(edges).distance(120))
+            .force('charge', d3.forceManyBody().strength(-400))
+            .force('center', d3.forceCenter(width / 2, height / 2))
+            .force('collision', d3.forceCollide(35));
 
-    node.append('circle')
-        .attr('r', d => NODE_SIZES[d.type] || 10)
-        .attr('fill', d => NODE_COLORS[d.type] || '#64748b')
-        .attr('fill-opacity', 0.15)
-        .attr('stroke', d => NODE_COLORS[d.type] || '#64748b')
-        .attr('stroke-width', 2);
+        // Draw edges
+        const link = g.append('g')
+            .selectAll('line')
+            .data(edges)
+            .join('line')
+            .attr('stroke', '#2e4060')
+            .attr('stroke-width', 1.5)
+            .attr('marker-end', 'url(#arrow)');
 
-    node.append('text')
-        .attr('dy', d => (NODE_SIZES[d.type] || 10) + 12)
-        .attr('text-anchor', 'middle')
-        .attr('font-size', 9)
-        .attr('fill', '#64748b')
-        .text(d => d.id);
+        // Edge labels
+        const edgeLabel = g.append('g')
+            .selectAll('text')
+            .data(edges)
+            .join('text')
+            .attr('font-size', 8)
+            .attr('fill', '#3a5070')
+            .attr('text-anchor', 'middle')
+            .text(d => d.relationship);
 
-    simulation.on('tick', () => {
-        link
-            .attr('x1', d => d.source.x)
-            .attr('y1', d => d.source.y)
-            .attr('x2', d => d.target.x)
-            .attr('y2', d => d.target.y);
+        // Draw nodes
+        const node = g.append('g')
+            .selectAll('g')
+            .data(nodes)
+            .join('g')
+            .call(d3.drag()
+                .on('start', (e, d) => {
+                    if (!e.active) simulation.alphaTarget(0.3).restart();
+                    d.fx = d.x; d.fy = d.y;
+                })
+                .on('drag', (e, d) => {
+                    d.fx = e.x; d.fy = e.y;
+                })
+                .on('end', (e, d) => {
+                    if (!e.active) simulation.alphaTarget(0);
+                    d.fx = null; d.fy = null;
+                })
+            );
 
-        edgeLabel
-            .attr('x', d => (d.source.x + d.target.x) / 2)
-            .attr('y', d => (d.source.y + d.target.y) / 2);
+        // Node glow effect
+        node.append('circle')
+            .attr('r', d => (NODE_SIZES[d.type] || 12) + 4)
+            .attr('fill', d => NODE_COLORS[d.type] || '#64748b')
+            .attr('fill-opacity', 0.08)
+            .attr('stroke', 'none');
 
-        node.attr('transform', d => `translate(${d.x},${d.y})`);
-    });
+        // Node circle
+        node.append('circle')
+            .attr('r', d => NODE_SIZES[d.type] || 12)
+            .attr('fill', d => NODE_COLORS[d.type] || '#64748b')
+            .attr('fill-opacity', 0.2)
+            .attr('stroke', d => NODE_COLORS[d.type] || '#64748b')
+            .attr('stroke-width', 2);
+
+        // Node label
+        node.append('text')
+            .attr('dy', d => (NODE_SIZES[d.type] || 12) + 14)
+            .attr('text-anchor', 'middle')
+            .attr('font-size', 10)
+            .attr('font-family', 'Courier New, monospace')
+            .attr('fill', '#8899aa')
+            .text(d => d.id);
+
+        // Tooltip on hover
+        node.append('title')
+            .text(d => `${d.id}\nType: ${d.type}`);
+
+        simulation.on('tick', () => {
+            link
+                .attr('x1', d => d.source.x)
+                .attr('y1', d => d.source.y)
+                .attr('x2', d => d.target.x)
+                .attr('y2', d => d.target.y);
+
+            edgeLabel
+                .attr('x', d => (d.source.x + d.target.x) / 2)
+                .attr('y', d => (d.source.y + d.target.y) / 2);
+
+            node.attr('transform', d => `translate(${d.x},${d.y})`);
+        });
+
+        console.log('Graph render complete');
+
+    } catch (err) {
+        console.error('Graph render error:', err);
+    }
 }
 
 function renderPaths(data) {
@@ -284,8 +238,8 @@ function renderDetections(data) {
     data.detections.forEach(d => {
         const card = document.createElement('div');
         card.className = 'detection-card';
-        const shortDesc = d.description.length > 100
-            ? d.description.substring(0, 100) + '...'
+        const shortDesc = d.description.length > 120
+            ? d.description.substring(0, 120) + '...'
             : d.description;
 
         card.innerHTML = `
@@ -303,9 +257,7 @@ function renderDetections(data) {
     });
 }
 
-// Load on start
-
-// Wait for layout before rendering graph
+// Auto-load on page ready
 window.addEventListener('load', () => {
     setTimeout(fetchAll, 500);
 });
