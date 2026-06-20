@@ -23,8 +23,9 @@
 
 > ⬡ Full platform — graph engine, attack path discovery, risk scoring, and security detections running live.
 
-![Dashboard](docs/screenshots/dashboard_full.png)
+[![Demo Video](docs/screenshots/dashboard_full.png)](https://youtu.be/2jjIKAi_7gY)
 
+*Click the image to watch the full demo on YouTube*
 ---
 
 ## What Is This?
